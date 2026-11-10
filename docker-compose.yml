@@ -1,0 +1,16 @@
+services:
+  jarvis:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      # Ollama runs on the host, not in this container.
+      OLLAMA_URL: http://host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # needed on Linux; Docker Desktop has it already
+    volumes:
+      - jarvis-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  jarvis-data:
