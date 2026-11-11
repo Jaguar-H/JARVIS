@@ -78,6 +78,45 @@ body {
 
 .sidebar button:disabled { opacity: 0.5; cursor: default; }
 
+.memory {
+  border-top: 1px solid var(--border);
+  padding-top: 0.5rem;
+}
+
+.memory-toggle {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.memory-list {
+  margin: 0;
+  padding: 0;
+  max-height: 40vh;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.memory-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.9rem;
+}
+
+.memory-empty {
+  margin: 0;
+  padding: 0.3rem 0.6rem;
+  color: #888;
+  font-size: 0.85rem;
+}
+
 .chat {
   flex: 1;
   min-width: 0;

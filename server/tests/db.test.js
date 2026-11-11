@@ -44,3 +44,22 @@ Deno.test("updates the model and deletes a chat with its messages", () => {
   assertEquals(db.getMessages(id), []);
   assertEquals(db.deleteChat(id), false);
 });
+
+Deno.test("saves memories in order and skips duplicates ignoring case", () => {
+  const db = openDb(":memory:");
+  assertEquals(db.addMemory("Lives in Pune"), true);
+  assertEquals(db.addMemory("Name is Sam"), true);
+  assertEquals(db.addMemory("lives in pune"), false);
+  assertEquals(db.listMemories(), [
+    { id: 1, fact: "Lives in Pune" },
+    { id: 2, fact: "Name is Sam" },
+  ]);
+});
+
+Deno.test("deletes a memory by id", () => {
+  const db = openDb(":memory:");
+  db.addMemory("Lives in Pune");
+  assertEquals(db.deleteMemory(1), true);
+  assertEquals(db.deleteMemory(1), false);
+  assertEquals(db.listMemories(), []);
+});

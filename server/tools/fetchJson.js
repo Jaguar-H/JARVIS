@@ -10,6 +10,8 @@ export async function fetchJson(service, url, params) {
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
   } catch (error) {
+    console.log(error);
+
     throw new Error(
       error.name === "TimeoutError" ? `${service} timed out` : `Could not reach ${service}`,
     );

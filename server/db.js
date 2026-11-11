@@ -20,9 +20,14 @@ export function openDb(path) {
       role TEXT NOT NULL,
       content TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS memories (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      fact TEXT NOT NULL UNIQUE COLLATE NOCASE
+    );
   `);
 
   const insertChat = db.prepare("INSERT INTO chats (title, model) VALUES (?, ?)");
+
   // Most recently active first: chats are ordered by their newest message.
   const selectChats = db.prepare(`
     SELECT id, title, model FROM chats
@@ -37,6 +42,10 @@ export function openDb(path) {
   );
   const updateModel = db.prepare("UPDATE chats SET model = ? WHERE id = ?");
   const removeChat = db.prepare("DELETE FROM chats WHERE id = ?");
+  const selectMemories = db.prepare("SELECT id, fact FROM memories ORDER BY id");
+  // The UNIQUE column makes this skip facts that are already saved, ignoring case.
+  const insertMemory = db.prepare("INSERT OR IGNORE INTO memories (fact) VALUES (?)");
+  const removeMemory = db.prepare("DELETE FROM memories WHERE id = ?");
 
   return {
     // The chat is titled with the start of its first message.
@@ -60,5 +69,12 @@ export function openDb(path) {
     setModel: (chatId, model) => updateModel.run(model, chatId),
 
     deleteChat: (id) => removeChat.run(id).changes > 0,
+
+    listMemories: () => selectMemories.all().map(plain),
+
+    // Returns false when the fact was already saved.
+    addMemory: (fact) => insertMemory.run(fact).changes > 0,
+
+    deleteMemory: (id) => removeMemory.run(id).changes > 0,
   };
 }

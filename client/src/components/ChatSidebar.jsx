@@ -1,4 +1,4 @@
-export default function ChatSidebar({ chats, selectedId, error, disabled, onSelect, onNew, onDelete }) {
+export default function ChatSidebar({ chats, selectedId, error, disabled, onSelect, onNew, onDelete, children }) {
   return (
     <aside className="sidebar">
       <button className="sidebar-new" onClick={onNew} disabled={disabled}>
@@ -22,6 +22,7 @@ export default function ChatSidebar({ chats, selectedId, error, disabled, onSele
           </li>
         ))}
       </ul>
+      {children}
     </aside>
   );
 }

@@ -20,10 +20,12 @@ export async function* streamReply(model, history, signal) {
       if (message.tool_calls) toolCalls.push(...message.tool_calls);
     }
     if (!toolCalls.length) return;
+    console.log({ toolcall: messages.tool_calls, toolCalls });
 
     messages.push({ role: "assistant", content, tool_calls: toolCalls });
     for (const { function: call } of toolCalls) {
       yield { type: "tool", name: call.name };
+
       const result = await runTool(call.name, call.arguments);
       messages.push({ role: "tool", tool_name: call.name, content: result });
     }
