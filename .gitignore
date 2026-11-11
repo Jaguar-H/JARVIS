@@ -3,3 +3,5 @@ client/dist
 data
 .env
 .DS_Store
+CLAUDE.md
+test/

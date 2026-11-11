@@ -12,7 +12,7 @@ export default function MessageList({ messages }) {
     <div className="message-list">
       {/* Append-only list, so the index is a stable key. */}
       {messages.map((message, index) => (
-        <Message key={index} role={message.role} content={message.content} />
+        <Message key={index} role={message.role} content={message.content} tool={message.tool} />
       ))}
       <div ref={bottomRef} />
     </div>

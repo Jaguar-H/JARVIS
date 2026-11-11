@@ -1,6 +1,6 @@
 import { chatStructured } from "./ollama.js";
 
-export const MEMORY_MODEL = Deno.env.get("MEMORY_MODEL") ?? "qwen3.5:2b";
+export const MEMORY_MODEL = Deno.env.get("MEMORY_MODEL") ?? "qwen3:8b";
 
 const MAX_NEW_FACTS = 5;
 const MAX_FACT_LENGTH = 200;
@@ -19,6 +19,7 @@ Read ONLY the user's latest message. Save a fact only if the user states it abou
 Never save: questions, requests, topics they ask about, general knowledge, passwords, PINs, keys or any secret.
 Write facts as short present-tense statements, e.g. "Lives in Pune". Never write "moved", "now" or "changed".
 "forget" = ids of existing memories that the message makes false. If the user changes a fact (city, job), put the OLD id in forget AND the new fact in add.
+and forget only if the two things are contradicting AND if found contradicting forget the old memory and add the current one.
 If nothing qualifies, return {"add": [], "forget": []}.
 
 Examples

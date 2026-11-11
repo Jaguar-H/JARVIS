@@ -29,11 +29,10 @@ export function useChat({ onSent }) {
     setError(null);
   }
 
-  function appendToReply(text) {
+  // Changes the last message (the reply being streamed) with a function of it.
+  function updateReply(change) {
     setMessages((prev) =>
-      prev.map((message, i) =>
-        i === prev.length - 1 ? { ...message, content: message.content + text } : message
-      )
+      prev.map((message, i) => (i === prev.length - 1 ? change(message) : message))
     );
   }
 
@@ -45,8 +44,11 @@ export function useChat({ onSent }) {
 
   function handleEvent(event) {
     if (event.type === "chat") setChatId(event.chat.id);
-    else if (event.type === "token") appendToReply(event.content);
-    else if (event.type === "error") fail(event.message);
+    else if (event.type === "tool") updateReply((m) => ({ ...m, tool: event.name }));
+    // A token means the tool is done and the model is answering.
+    else if (event.type === "token") {
+      updateReply((m) => ({ ...m, content: m.content + event.content, tool: null }));
+    } else if (event.type === "error") fail(event.message);
   }
 
   async function send(content) {
@@ -63,6 +65,7 @@ export function useChat({ onSent }) {
     } catch (err) {
       fail(err.message);
     } finally {
+      updateReply((m) => ({ ...m, tool: null }));
       setIsLoading(false);
       onSent();
     }
