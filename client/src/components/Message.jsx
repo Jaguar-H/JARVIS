@@ -1,8 +1,9 @@
 import { useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import ArcReactor from "./ArcReactor.jsx";
 
-// Wraps each code block with a Copy button. The copied text is the <pre>'s visible text.
+/** Wraps each code block with a Copy button. */
 function CodeBlock({ children }) {
   const preRef = useRef(null);
   const [copied, setCopied] = useState(false);
@@ -15,7 +16,9 @@ function CodeBlock({ children }) {
 
   return (
     <div className="code-block">
-      <button className="code-copy" onClick={copy}>{copied ? "Copied" : "Copy"}</button>
+      <button className="code-copy" onClick={copy}>
+        {copied ? "✓ Copied" : "Copy"}
+      </button>
       <pre ref={preRef}>{children}</pre>
     </div>
   );
@@ -24,27 +27,42 @@ function CodeBlock({ children }) {
 const markdownComponents = { pre: CodeBlock };
 
 export default function Message({ role, content, tool, model }) {
+  if (role === "user") {
+    return (
+      <div className="message message-user">
+        {content}
+      </div>
+    );
+  }
+
+  // Assistant message
   return (
-    <div className={`message message-${role}`}>
-      {role === "assistant" ? (
-        <>
-          {/* No text yet and no tool running: show the thinking dots. */}
-          {content ? (
-            <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-              {content}
-            </ReactMarkdown>
-          ) : (
-            !tool && (
-              <span className="thinking" role="status" aria-label="Jarvis is thinking">
-                <i /><i /><i />
-              </span>
-            )
-          )}
-          {tool && <em className="message-tool">Using {tool}…</em>}
-          {model && content && <span className="message-model">{model}</span>}
-        </>
+    <div className="message message-assistant">
+      {/* JARVIS label row */}
+      <div className="message-assistant-header">
+        <ArcReactor />
+        <span className="message-assistant-label">J.A.R.V.I.S</span>
+      </div>
+
+      {/* Content or thinking indicator */}
+      {content ? (
+        <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+          {content}
+        </ReactMarkdown>
       ) : (
-        content
+        !tool && (
+          <span className="thinking" role="status" aria-label="Jarvis is thinking">
+            <i /><i /><i />
+          </span>
+        )
+      )}
+
+      {/* Tool-use badge */}
+      {tool && <em className="message-tool">{tool}…</em>}
+
+      {/* Model attribution */}
+      {model && content && (
+        <span className="message-model">◈ {model}</span>
       )}
     </div>
   );

@@ -4,6 +4,7 @@ const STARTERS = [
   "What's the weather like today?",
   "What's in the news?",
   "What do you remember about me?",
+  "Run a web search for me",
 ];
 
 function greeting() {
@@ -13,12 +14,13 @@ function greeting() {
   return "Good evening";
 }
 
-// Shown in an empty chat. Each starter sends its text as a message.
+/** Shown in an empty chat. Each starter sends its text as a message. */
 export default function EmptyState({ onPrompt }) {
   return (
     <div className="empty">
       <ArcReactor large />
-      <h2>{greeting()}. How can I help?</h2>
+      <h2 className="empty-greeting">{greeting()}</h2>
+      <p className="empty-sub">Systems online — how can I assist?</p>
       <div className="starters">
         {STARTERS.map((prompt) => (
           <button key={prompt} className="starter" onClick={() => onPrompt(prompt)}>
