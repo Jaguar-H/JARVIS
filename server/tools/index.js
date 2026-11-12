@@ -1,8 +1,9 @@
 import * as getWeather from "./weather/getWeather.js";
 import * as searchWikipedia from "./wikipedia/searchWikipedia.js";
 import * as webSearch from "./search/webSearch.js";
+import * as sendTelegram from "./telegram/sendTelegram.js";
 
-const tools = [getWeather, searchWikipedia, webSearch];
+const tools = [getWeather, searchWikipedia, webSearch, sendTelegram];
 
 export const definitions = tools.map((tool) => tool.definition);
 

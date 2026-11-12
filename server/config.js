@@ -1,5 +1,5 @@
 // Every server setting in one place. Edit a value here and restart.
-// Only OLLAMA_URL, MEMORY_MODEL and SEARXNG_URL can also be set with environment variables.
+// Only OLLAMA_URL, MEMORY_MODEL, SEARXNG_URL, LAYA_URL, TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID can also be set with environment variables.
 const env = (name, fallback) => Deno.env.get(name) ?? fallback;
 
 export const config = {
@@ -18,6 +18,22 @@ export const config = {
   chat: {
     // A new chat is titled with this many characters of its first message.
     titleLength: 50,
+    // Only this many of the newest messages are sent to the model (all stay stored).
+    maxHistory: 40,
+  },
+
+  telegram: {
+    // Both must be set to turn the bot on. Only messages from chatId are answered.
+    token: env("TELEGRAM_BOT_TOKEN", ""),
+    chatId: env("TELEGRAM_CHAT_ID", ""),
+    apiUrl: "https://api.telegram.org",
+    pollSeconds: 30, // how long Telegram holds a getUpdates call open
+    maxMessageLength: 4096, // Telegram's limit; longer replies are split
+  },
+
+  scheduler: {
+    tickSeconds: 30, // how often due reminders are looked for
+    lateAfterSeconds: 90, // a reminder sent later than this after its time gets a "was due" note
   },
 
   // Timezone used for "today's date" in the system prompt (the Docker container runs in UTC).

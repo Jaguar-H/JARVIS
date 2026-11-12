@@ -23,10 +23,20 @@ export function openDb(path) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       fact TEXT NOT NULL UNIQUE COLLATE NOCASE
     );
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
     CREATE TABLE IF NOT EXISTS usage (
       model TEXT PRIMARY KEY,
       prompt_tokens INTEGER NOT NULL DEFAULT 0,
       completion_tokens INTEGER NOT NULL DEFAULT 0
+    );
+    CREATE TABLE IF NOT EXISTS reminders (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      text TEXT NOT NULL,
+      due_at INTEGER NOT NULL,
+      sent_at INTEGER
     );
   `);
 
@@ -56,6 +66,17 @@ export function openDb(path) {
       prompt_tokens = prompt_tokens + excluded.prompt_tokens,
       completion_tokens = completion_tokens + excluded.completion_tokens
   `);
+  const selectSetting = db.prepare("SELECT value FROM settings WHERE key = ?");
+  const upsertSetting = db.prepare(`
+    INSERT INTO settings (key, value) VALUES (?, ?)
+    ON CONFLICT(key) DO UPDATE SET value = excluded.value
+  `);
+  const removeSetting = db.prepare("DELETE FROM settings WHERE key = ?");
+  const insertReminder = db.prepare("INSERT INTO reminders (text, due_at) VALUES (?, ?)");
+  const selectDueReminders = db.prepare(
+    "SELECT id, text, due_at FROM reminders WHERE sent_at IS NULL AND due_at <= ? ORDER BY due_at",
+  );
+  const updateReminderSent = db.prepare("UPDATE reminders SET sent_at = ? WHERE id = ?");
   const selectUsage = db.prepare(
     "SELECT model, prompt_tokens, completion_tokens FROM usage ORDER BY model",
   );
@@ -93,6 +114,19 @@ export function openDb(path) {
     // Lifetime token totals per model, added up as Ollama reports them.
     addUsage: (model, promptTokens, completionTokens) =>
       upsertUsage.run(model, promptTokens, completionTokens),
+
+    getSetting: (key) => selectSetting.get(key)?.value ?? null,
+
+    setSetting: (key, value) => upsertSetting.run(key, String(value)),
+
+    deleteSetting: (key) => removeSetting.run(key),
+
+    // dueAt and now are epoch milliseconds.
+    addReminder: (text, dueAt) => Number(insertReminder.run(text, dueAt).lastInsertRowid),
+
+    listDueReminders: (now) => selectDueReminders.all(now).map(plain),
+
+    markReminderSent: (id, now) => updateReminderSent.run(now, id),
 
     listUsage: () => selectUsage.all().map(plain),
   };

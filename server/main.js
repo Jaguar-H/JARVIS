@@ -6,6 +6,7 @@ import { chatRoutes } from "./routes/chat.js";
 import { chatsRoutes } from "./routes/chats.js";
 import { memoriesRoutes } from "./routes/memories.js";
 import { usageRoutes } from "./routes/usage.js";
+import { startTelegram } from "./telegram.js";
 
 const DB_DIR = "data";
 
@@ -25,3 +26,4 @@ app.route("/api/usage", usageRoutes(db));
 app.use("/*", serveStatic({ root: "./client/dist" }));
 
 Deno.serve(app.fetch);
+startTelegram(db);

@@ -39,7 +39,7 @@ Chats are kept in the `jarvis-data` volume.
 
 ## Configuration
 
-Server settings (limits, timeouts, persona, tool URLs, router models) are all in `server/config.js`. Four of them can also be set with env vars:
+Server settings (limits, timeouts, persona, tool URLs, router models) are all in `server/config.js`. Some of them can also be set with env vars:
 
 | Setting      | Where                  | Default                  |
 | ------------ | ---------------------- | ------------------------ |
@@ -47,8 +47,22 @@ Server settings (limits, timeouts, persona, tool URLs, router models) are all in
 | Memory model | `MEMORY_MODEL` env var | `qwen3:8b`               |
 | SearXNG URL  | `SEARXNG_URL` env var  | `http://localhost:8080`  |
 | Laya URL     | `LAYA_URL` env var     | `http://localhost:8100`  |
+| Telegram bot | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` env vars | off |
 | Model list   | `client/src/models.js` | five models, edit freely |
 | Database     | `server/main.js`       | `data/jarvis.db`         |
+
+## Telegram
+
+Text Jarvis from your phone. Create a bot with @BotFather, send it one message, and read your chat id from `https://api.telegram.org/bot<TOKEN>/getUpdates` (`message.chat.id`). Put both in a `.env` file in the project root (the deno tasks and `docker-compose` both read it), or `export` them in your shell:
+
+```
+TELEGRAM_BOT_TOKEN=...
+TELEGRAM_CHAT_ID=...
+```
+
+Only that chat id is answered. All Telegram messages go into one chat (visible in the web sidebar); send `/new` to start a fresh one. Replies arrive whole, as plain text, not streamed. Memory is shared with the web chat; `/new` resets the conversation but not what Jarvis remembers.
+
+Run only one copy of the bot per token (the host server or the container, not both), and in Docker rebuild after pulling changes: `docker-compose up -d --build jarvis`.
 
 ## Project layout
 
@@ -56,6 +70,8 @@ Server settings (limits, timeouts, persona, tool URLs, router models) are all in
 server/
   main.js              Hono app: mounts routes, serves the built client
   agent.js             streams the reply; runs tools and asks the model again
+  chatRun.js           one reply end to end (pick model, prompt, stream, save, learn); shared by the web route and Telegram
+  telegram.js          optional Telegram bot (long polling)
   ollama.js            streaming client for Ollama's /api/chat
   db.js                SQLite schema and queries
   routes/              /api/chat (stream) and /api/chats (list, get, delete)
@@ -71,7 +87,7 @@ client/src/
 ## How it works
 
 1. The client sends `{ chatId?, model, content }` to `POST /api/chat`. The server owns the history, so a missing `chatId` creates a new chat.
-2. The server loads the history from SQLite and asks Ollama for a reply, with the available tools attached.
+2. The server loads the history from SQLite (the newest 40 messages) and asks Ollama for a reply, with the available tools attached.
 3. If the model asks for a tool, the server runs it, adds the result to the conversation and asks again (up to 5 steps).
 4. Events stream back as newline-delimited JSON: `chat`, `route`, `token`, `tool`, `error`. The client appends tokens as they arrive, and markdown is rendered in the reply.
 5. Once the reply finishes, it is saved. A failed or aborted reply is not saved.

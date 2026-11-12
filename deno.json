@@ -2,9 +2,9 @@
   "imports": { "hono": "jsr:@hono/hono@^4" },
   "nodeModulesDir": "auto",
   "tasks": {
-    "server": "deno run --watch -A server/main.js",
+    "server": "deno run --watch --env-file=.env -A server/main.js",
     "client": "cd client && deno install && deno run -A npm:vite",
     "build": "cd client && deno install && deno run -A npm:vite build",
-    "start": "deno task build && deno run -A server/main.js"
+    "start": "deno task build && deno run --env-file=.env -A server/main.js"
   }
 }
