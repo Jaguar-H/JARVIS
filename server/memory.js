@@ -32,7 +32,7 @@ Existing: [1] Name is Sam | Message: explain recursion please -> {"add":[],"forg
 //
 // Only the user's message is given to the model, not the assistant's reply: with the reply
 // included, the 2B model stopped noticing contradictions.
-export async function extractMemories({ memories, userMessage }) {
+export async function extractMemories({ memories, userMessage, onUsage }) {
   const notebook = memories.length
     ? memories.map(({ id, fact }) => `[${id}] ${fact}`).join("\n")
     : "(none)";
@@ -40,7 +40,7 @@ export async function extractMemories({ memories, userMessage }) {
   const result = await chatStructured(model, [
     { role: "system", content: `${INSTRUCTIONS}\n\nExisting memories:\n${notebook}` },
     { role: "user", content: userMessage },
-  ], SCHEMA);
+  ], SCHEMA, onUsage);
 
   const knownIds = new Set(memories.map(({ id }) => id));
   return {
@@ -59,6 +59,7 @@ export async function learnFromMessage(db, userMessage) {
     const { add, forget } = await extractMemories({
       memories: db.listMemories(),
       userMessage,
+      onUsage: ({ prompt, completion }) => db.addUsage(model, prompt, completion),
     });
     console.log({ add, forget });
 

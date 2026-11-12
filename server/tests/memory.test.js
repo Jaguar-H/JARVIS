@@ -74,3 +74,21 @@ Deno.test("never throws, and saves nothing, when the model output is invalid or 
     });
   }
 });
+
+Deno.test("counts the tokens the memory model used", async () => {
+  const original = globalThis.fetch;
+  globalThis.fetch = () =>
+    Promise.resolve(Response.json({
+      message: { role: "assistant", content: output({ add: [], forget: [] }) },
+      prompt_eval_count: 40,
+      eval_count: 6,
+    }));
+  try {
+    const db = openDb(":memory:");
+    await learnFromMessage(db, "hello");
+    const [row] = db.listUsage();
+    assertEquals([row.prompt_tokens, row.completion_tokens], [40, 6]);
+  } finally {
+    globalThis.fetch = original;
+  }
+});

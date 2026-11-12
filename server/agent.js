@@ -4,7 +4,8 @@ import { definitions, runTool } from "./tools/index.js";
 
 const MAX_STEPS = config.agent.maxSteps;
 
-// Streams the model's answer as events: { type: "token", content } and { type: "tool", name }.
+// Streams the model's answer as events: { type: "token", content }, { type: "tool", name } and
+// { type: "usage", prompt, completion } (token counts, for the server only).
 // When the model asks for tools, runs them and asks again, until it answers in text.
 export async function* streamReply(model, history, signal) {
   const messages = [...history];
@@ -13,12 +14,14 @@ export async function* streamReply(model, history, signal) {
     let content = "";
     const toolCalls = [];
 
-    for await (const { message } of streamChat(model, messages, definitions, signal)) {
+    for await (const { message, done, prompt_eval_count, eval_count } of streamChat(model, messages, definitions, signal)) {
       if (message.content) {
         content += message.content;
         yield { type: "token", content: message.content };
       }
       if (message.tool_calls) toolCalls.push(...message.tool_calls);
+      // Ollama reports the token counts on the last chunk of each call.
+      if (done) yield { type: "usage", prompt: prompt_eval_count ?? 0, completion: eval_count ?? 0 };
     }
     if (!toolCalls.length) return;
     console.log({ toolcall: messages.tool_calls, toolCalls });

@@ -4,6 +4,15 @@ import { streamReply } from "../agent.js";
 import { learnFromMessage } from "../memory.js";
 import { buildSystemPrompt } from "../prompt.js";
 
+// Counting tokens must never break a reply.
+function countTokens(db, model, { prompt, completion }) {
+  try {
+    db.addUsage(model, prompt, completion);
+  } catch (error) {
+    console.warn(`[usage] could not count tokens: ${error.message}`);
+  }
+}
+
 // POST / { chatId?, model, content } streams the reply as NDJSON events.
 // Without a chatId a new chat is created. The server keeps the history.
 export function chatRoutes(db) {
@@ -45,6 +54,10 @@ export function chatRoutes(db) {
           ...history,
         ];
         for await (const event of streamReply(body.model, messages, controller.signal)) {
+          if (event.type === "usage") {
+            countTokens(db, body.model, event);
+            continue;
+          }
           if (event.type === "token") reply += event.content;
           await send(event);
         }

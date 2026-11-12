@@ -1,6 +1,9 @@
-export default function ChatSidebar({ chats, selectedId, error, disabled, onSelect, onNew, onDelete, children }) {
+// collapsed hides the panel with CSS, so the memory panel keeps its open/closed state.
+export default function ChatSidebar({
+  chats, selectedId, error, disabled, collapsed, onSelect, onNew, onDelete, children,
+}) {
   return (
-    <aside className="sidebar">
+    <aside className={collapsed ? "sidebar collapsed" : "sidebar"}>
       <button className="sidebar-new" onClick={onNew} disabled={disabled}>
         New chat
       </button>

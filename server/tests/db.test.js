@@ -63,3 +63,14 @@ Deno.test("deletes a memory by id", () => {
   assertEquals(db.deleteMemory(1), false);
   assertEquals(db.listMemories(), []);
 });
+
+Deno.test("adds up token usage per model", () => {
+  const db = openDb(":memory:");
+  db.addUsage("a", 10, 5);
+  db.addUsage("a", 20, 7);
+  db.addUsage("b", 1, 2);
+  assertEquals(db.listUsage(), [
+    { model: "a", prompt_tokens: 30, completion_tokens: 12 },
+    { model: "b", prompt_tokens: 1, completion_tokens: 2 },
+  ]);
+});

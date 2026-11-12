@@ -23,6 +23,11 @@ export function openDb(path) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       fact TEXT NOT NULL UNIQUE COLLATE NOCASE
     );
+    CREATE TABLE IF NOT EXISTS usage (
+      model TEXT PRIMARY KEY,
+      prompt_tokens INTEGER NOT NULL DEFAULT 0,
+      completion_tokens INTEGER NOT NULL DEFAULT 0
+    );
   `);
 
   const insertChat = db.prepare("INSERT INTO chats (title, model) VALUES (?, ?)");
@@ -45,6 +50,15 @@ export function openDb(path) {
   // The UNIQUE column makes this skip facts that are already saved, ignoring case.
   const insertMemory = db.prepare("INSERT OR IGNORE INTO memories (fact) VALUES (?)");
   const removeMemory = db.prepare("DELETE FROM memories WHERE id = ?");
+  const upsertUsage = db.prepare(`
+    INSERT INTO usage (model, prompt_tokens, completion_tokens) VALUES (?, ?, ?)
+    ON CONFLICT(model) DO UPDATE SET
+      prompt_tokens = prompt_tokens + excluded.prompt_tokens,
+      completion_tokens = completion_tokens + excluded.completion_tokens
+  `);
+  const selectUsage = db.prepare(
+    "SELECT model, prompt_tokens, completion_tokens FROM usage ORDER BY model",
+  );
 
   return {
     // The chat is titled with the start of its first message.
@@ -75,5 +89,11 @@ export function openDb(path) {
     addMemory: (fact) => insertMemory.run(fact).changes > 0,
 
     deleteMemory: (id) => removeMemory.run(id).changes > 0,
+
+    // Lifetime token totals per model, added up as Ollama reports them.
+    addUsage: (model, promptTokens, completionTokens) =>
+      upsertUsage.run(model, promptTokens, completionTokens),
+
+    listUsage: () => selectUsage.all().map(plain),
   };
 }

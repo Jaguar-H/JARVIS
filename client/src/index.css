@@ -45,6 +45,8 @@ body {
 
 .sidebar-new:hover { border-color: var(--accent); }
 
+.sidebar.collapsed { display: none; }
+
 .sidebar-list {
   flex: 1;
   margin: 0;
@@ -144,9 +146,23 @@ body {
   padding: 1rem 1rem 0;
 }
 
+.icon-button {
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.icon-button:hover { border-color: var(--accent); }
+
+/* The logo sits in the middle of the header, away from the sidebar button on the left. */
 .brand {
+  flex: 1;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.6rem;
 }
 
@@ -165,28 +181,13 @@ body {
   margin: 0 auto 1rem;
 }
 
-.arc-ring {
-  fill: none;
-  stroke: var(--accent);
-  stroke-width: 1.5;
-  opacity: 0.7;
-}
-
-.arc-dashes {
-  fill: none;
-  stroke: var(--accent);
-  stroke-width: 6;
-  stroke-dasharray: 10 6;
-  opacity: 0.6;
-}
-
 .arc-spin {
   transform-origin: 50px 50px;
   animation: arc-spin 12s linear infinite;
 }
 
+/* Colours are set in ArcReactor.jsx; CSS here only adds the pulse. */
 .arc-core {
-  fill: #fff6d6;
   animation: arc-pulse 2.4s ease-in-out infinite;
 }
 
@@ -214,11 +215,11 @@ body {
 }
 
 .model-select {
-  padding: 0.4rem 0.6rem;
-  border: 1px solid var(--border);
+  padding: 0.3rem 0.5rem;
+  border: 0;
   border-radius: 8px;
-  background: var(--field);
-  color: inherit;
+  background: transparent;
+  color: var(--muted);
 }
 
 .message-list {
@@ -227,7 +228,7 @@ body {
   padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1.1rem;
 }
 
 .empty {
@@ -272,17 +273,16 @@ body {
 
 .message-user {
   align-self: flex-end;
-  background: rgba(255, 176, 32, 0.12);
-  border: 1px solid var(--accent-soft);
+  background: var(--surface);
   white-space: pre-wrap;
 }
 
-/* Replies have no bubble: a thin glowing line marks them instead. */
+/* Replies have no bubble or border, so they read like a page. */
 .message-assistant {
   align-self: flex-start;
   max-width: 100%;
-  padding: 0.2rem 0 0.2rem 1rem;
-  border-left: 2px solid var(--accent-soft);
+  padding: 0.2rem 0;
+  line-height: 1.65;
 }
 
 .message-tool {
@@ -423,10 +423,7 @@ body {
   background: var(--surface);
 }
 
-.chat-input:focus-within {
-  border-color: var(--accent-soft);
-  box-shadow: var(--glow);
-}
+.chat-input:focus-within { border-color: var(--accent-soft); }
 
 .chat-input textarea {
   flex: 1;
@@ -462,4 +459,11 @@ body {
 .chat-input button:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+.usage {
+  margin: 0;
+  padding: 0.3rem 0.6rem;
+  color: var(--muted);
+  font-size: 0.8rem;
 }

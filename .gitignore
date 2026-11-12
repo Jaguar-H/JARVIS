@@ -5,3 +5,12 @@ data
 .DS_Store
 CLAUDE.md
 test/
+.venv
+*.safetensors
+*.gguf
+*.bin
+*.pt
+*.pth
+*.ckpt
+*.onnx
+__pycache__

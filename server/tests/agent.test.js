@@ -82,3 +82,19 @@ Deno.test("surfaces an error reported inside the stream", () =>
       "model not found",
     );
   }));
+
+Deno.test("reports the token counts from the last chunk of each call", () => {
+  const last = JSON.stringify({
+    message: { role: "assistant", content: "" },
+    done: true,
+    prompt_eval_count: 12,
+    eval_count: 3,
+  }) + "\n";
+  return withOllama([ndjsonResponse(text("Hi"), last)], async () => {
+    const events = await collect(streamReply("m", [{ role: "user", content: "hi" }]));
+    assertEquals(events, [
+      { type: "token", content: "Hi" },
+      { type: "usage", prompt: 12, completion: 3 },
+    ]);
+  });
+});
