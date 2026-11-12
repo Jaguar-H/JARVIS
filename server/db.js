@@ -1,6 +1,5 @@
 import { DatabaseSync } from "node:sqlite";
-
-const TITLE_LENGTH = 50;
+import { config } from "./config.js";
 
 // Rows from node:sqlite have a null prototype; copy them into plain objects.
 const plain = (row) => ({ ...row });
@@ -50,7 +49,7 @@ export function openDb(path) {
   return {
     // The chat is titled with the start of its first message.
     createChat(firstMessage, model) {
-      const title = firstMessage.trim().slice(0, TITLE_LENGTH);
+      const title = firstMessage.trim().slice(0, config.chat.titleLength);
       const { lastInsertRowid } = insertChat.run(title, model);
       return { id: Number(lastInsertRowid), title, model };
     },

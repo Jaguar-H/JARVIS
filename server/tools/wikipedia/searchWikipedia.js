@@ -1,9 +1,8 @@
+import { config } from "../../config.js";
 import { fetchJson } from "../fetchJson.js";
 
-const API_URL = "https://en.wikipedia.org/w/api.php";
+const { apiUrl, maxResults, summarySentences } = config.tools.wikipedia;
 const SERVICE = "Wikipedia";
-const MAX_RESULTS = 3;
-const SUMMARY_SENTENCES = 4;
 
 export const definition = {
   type: "function",
@@ -27,17 +26,17 @@ export async function run({ query }) {
     throw new Error("query is required");
   }
 
-  const data = await fetchJson(SERVICE, API_URL, {
+  const data = await fetchJson(SERVICE, apiUrl, {
     action: "query",
     format: "json",
     formatversion: 2,
     generator: "search",
     gsrsearch: query.trim(),
-    gsrlimit: MAX_RESULTS,
+    gsrlimit: maxResults,
     prop: "extracts|info",
     exintro: 1,
     explaintext: 1,
-    exsentences: SUMMARY_SENTENCES,
+    exsentences: summarySentences,
     exlimit: "max",
     inprop: "url",
   });

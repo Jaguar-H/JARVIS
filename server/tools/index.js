@@ -1,7 +1,8 @@
 import * as getWeather from "./weather/getWeather.js";
 import * as searchWikipedia from "./wikipedia/searchWikipedia.js";
+import * as webSearch from "./search/webSearch.js";
 
-const tools = [getWeather, searchWikipedia];
+const tools = [getWeather, searchWikipedia, webSearch];
 
 export const definitions = tools.map((tool) => tool.definition);
 

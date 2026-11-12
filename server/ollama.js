@@ -1,6 +1,6 @@
-// Set OLLAMA_URL when Ollama is not on localhost, e.g. when the server runs in Docker.
-const OLLAMA_URL = Deno.env.get("OLLAMA_URL") ?? "http://localhost:11434";
-const OLLAMA_CHAT_URL = `${OLLAMA_URL}/api/chat`;
+import { config } from "./config.js";
+
+const OLLAMA_CHAT_URL = `${config.ollama.url}/api/chat`;
 
 // Yields Ollama's streamed chunks: { message: { content, thinking, tool_calls }, done }.
 // model: an Ollama model name. messages: [{ role, content, ... }]. tools: optional tool definitions.
@@ -24,8 +24,6 @@ export async function* streamChat(model, messages, tools, signal) {
   yield* parseChunk(buffer);
 }
 
-const STRUCTURED_TIMEOUT_MS = 60_000;
-
 // One non-streaming call whose reply is forced into the given JSON schema, without thinking.
 // Returns the parsed JSON. Used for small background jobs, so it is deterministic.
 export async function chatStructured(model, messages, schema) {
@@ -40,7 +38,7 @@ export async function chatStructured(model, messages, schema) {
       options: { temperature: 0 },
       stream: false,
     }),
-    signal: AbortSignal.timeout(STRUCTURED_TIMEOUT_MS),
+    signal: AbortSignal.timeout(config.ollama.structuredTimeoutMs),
   });
   if (!res.ok) throw new Error(`Ollama ${res.status}: ${await res.text()}`);
   return JSON.parse((await res.json()).message.content);

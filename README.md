@@ -1,6 +1,6 @@
 # Jarvis
 
-A local chatbot that runs on your own Ollama models. It streams replies, remembers conversations, and can call tools (weather and Wikipedia).
+A local chatbot that runs on your own Ollama models. It streams replies, remembers conversations, and can call tools (weather, Wikipedia and web search).
 
 - **Server:** Deno + [Hono](https://hono.dev)
 - **Client:** React + Vite
@@ -39,11 +39,15 @@ Chats are kept in the `jarvis-data` volume.
 
 ## Configuration
 
-| Setting      | Where                | Default                  |
-| ------------ | -------------------- | ------------------------ |
-| Ollama URL   | `OLLAMA_URL` env var | `http://localhost:11434` |
+Server settings (limits, timeouts, persona, tool URLs) are all in `server/config.js`. Three of them can also be set with env vars:
+
+| Setting      | Where                  | Default                  |
+| ------------ | ---------------------- | ------------------------ |
+| Ollama URL   | `OLLAMA_URL` env var   | `http://localhost:11434` |
+| Memory model | `MEMORY_MODEL` env var | `qwen3:8b`               |
+| SearXNG URL  | `SEARXNG_URL` env var  | `http://localhost:8080`  |
 | Model list   | `client/src/models.js` | five models, edit freely |
-| Database     | `server/main.js`     | `data/jarvis.db`         |
+| Database     | `server/main.js`       | `data/jarvis.db`         |
 
 ## Project layout
 
@@ -79,6 +83,7 @@ Only your messages and the final reply text are stored. Tool results are not, so
 | ----------------- | ---------------------------------------------------------------------------- |
 | `get_weather`     | Current weather, next 24 hours and 7-day forecast via [Open-Meteo](https://open-meteo.com) (no API key) |
 | `search_wikipedia` | Short summaries of the best matching English Wikipedia articles              |
+| `web_search`      | Web results (title, link, snippet) from a self-hosted [SearXNG](https://github.com/searxng/searxng); the model may pick a category. Start it with `docker-compose up -d searxng` (port 8080, stop any other container using it first) |
 
 Every tool call is logged to the server console as `[tool] name called {...}`.
 

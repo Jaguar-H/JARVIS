@@ -9,10 +9,21 @@ services:
     environment:
       # Ollama runs on the host, not in this container.
       OLLAMA_URL: http://host.docker.internal:11434
+      SEARXNG_URL: http://searxng:8080
     extra_hosts:
       - "host.docker.internal:host-gateway" # needed on Linux; Docker Desktop has it already
     volumes:
       - jarvis-data:/app/data
+    depends_on:
+      - searxng
+    restart: unless-stopped
+
+  searxng:
+    image: searxng/searxng
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./searxng:/etc/searxng
     restart: unless-stopped
 
 volumes:

@@ -1,9 +1,9 @@
+import { config } from "../../config.js";
 import { fetchJson } from "../fetchJson.js";
 import { describeWeatherCode } from "./weatherCodes.js";
 
-const GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/search";
-const FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
-const HOURS_AHEAD = 24;
+const { geocodingUrl, forecastUrl, geocodeCount, hoursAhead, forecastDays } =
+  config.tools.weather;
 const SERVICE = "The weather service";
 
 export const definition = {
@@ -11,7 +11,7 @@ export const definition = {
   function: {
     name: "get_weather",
     description:
-      "Get the current weather, the next 24 hours and a 7-day forecast for a city. " +
+      `Get the current weather, the next ${hoursAhead} hours and a ${forecastDays}-day forecast for a city. ` +
       "Pass only the city name. If several places share the name, use country to pick one.",
     parameters: {
       type: "object",
@@ -51,9 +51,9 @@ function matchesCountry(place, country) {
 }
 
 async function findLocation(city, country) {
-  const { results = [] } = await fetchJson(SERVICE, GEOCODING_URL, {
+  const { results = [] } = await fetchJson(SERVICE, geocodingUrl, {
     name: city,
-    count: 5,
+    count: geocodeCount,
     language: "en",
     format: "json",
   });
@@ -78,7 +78,7 @@ function describeLocation(place) {
 }
 
 async function fetchForecast({ latitude, longitude }) {
-  const data = await fetchJson(SERVICE, FORECAST_URL, {
+  const data = await fetchJson(SERVICE, forecastUrl, {
     latitude,
     longitude,
     current:
@@ -89,7 +89,7 @@ async function fetchForecast({ latitude, longitude }) {
     temperature_unit: "celsius",
     wind_speed_unit: "kmh",
     timezone: "auto",
-    forecast_days: 7,
+    forecast_days: forecastDays,
   });
 
   if (!data.current || !data.hourly || !data.daily) {
@@ -120,7 +120,7 @@ function shapeHourly(hourly, currentTime) {
   const currentHour = currentTime.slice(0, 13);
   const start = Math.max(0, hourly.time.findIndex((time) => time.slice(0, 13) >= currentHour));
 
-  return hourly.time.slice(start, start + HOURS_AHEAD).map((time, offset) => ({
+  return hourly.time.slice(start, start + hoursAhead).map((time, offset) => ({
     time,
     temperatureC: hourly.temperature_2m[start + offset],
     precipitationProbabilityPercent: hourly.precipitation_probability[start + offset],

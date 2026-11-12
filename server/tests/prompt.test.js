@@ -1,10 +1,16 @@
 import { assertEquals } from "jsr:@std/assert@1";
 import { buildSystemPrompt } from "../prompt.js";
 
-Deno.test("without memories, the prompt is only the persona", () => {
+Deno.test("without memories, the prompt has no memory section", () => {
   const prompt = buildSystemPrompt([]);
   assertEquals(prompt.includes("Jarvis"), true);
   assertEquals(prompt.includes("What you know about the user"), false);
+});
+
+Deno.test("tells the model today's date in the configured timezone", () => {
+  const year = new Date().toLocaleDateString("en-GB", { year: "numeric", timeZone: "Asia/Kolkata" });
+  assertEquals(buildSystemPrompt([]).includes(`Today is`), true);
+  assertEquals(buildSystemPrompt([]).includes(year), true);
 });
 
 Deno.test("lists the facts it knows about the user", () => {

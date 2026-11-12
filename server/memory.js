@@ -1,9 +1,7 @@
+import { config } from "./config.js";
 import { chatStructured } from "./ollama.js";
 
-export const MEMORY_MODEL = Deno.env.get("MEMORY_MODEL") ?? "qwen3:8b";
-
-const MAX_NEW_FACTS = 5;
-const MAX_FACT_LENGTH = 200;
+const { model, maxNewFacts, maxFactLength } = config.memory;
 
 const SCHEMA = {
   type: "object",
@@ -39,7 +37,7 @@ export async function extractMemories({ memories, userMessage }) {
     ? memories.map(({ id, fact }) => `[${id}] ${fact}`).join("\n")
     : "(none)";
 
-  const result = await chatStructured(MEMORY_MODEL, [
+  const result = await chatStructured(model, [
     { role: "system", content: `${INSTRUCTIONS}\n\nExisting memories:\n${notebook}` },
     { role: "user", content: userMessage },
   ], SCHEMA);
@@ -48,8 +46,8 @@ export async function extractMemories({ memories, userMessage }) {
   return {
     add: (result.add ?? [])
       .map((fact) => String(fact).trim())
-      .filter((fact) => fact && fact.length <= MAX_FACT_LENGTH)
-      .slice(0, MAX_NEW_FACTS),
+      .filter((fact) => fact && fact.length <= maxFactLength)
+      .slice(0, maxNewFacts),
     forget: (result.forget ?? []).filter((id) => knownIds.has(id)),
   };
 }

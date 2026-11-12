@@ -1,7 +1,8 @@
+import { config } from "./config.js";
 import { streamChat } from "./ollama.js";
 import { definitions, runTool } from "./tools/index.js";
 
-const MAX_STEPS = 5;
+const MAX_STEPS = config.agent.maxSteps;
 
 // Streams the model's answer as events: { type: "token", content } and { type: "tool", name }.
 // When the model asks for tools, runs them and asks again, until it answers in text.

@@ -1,0 +1,7 @@
+# Overrides on top of SearXNG's defaults. Local use only.
+use_default_settings: true
+search:
+  formats: [html, json] # Jarvis needs json
+server:
+  secret_key: "change-me-local-only"
+  limiter: false

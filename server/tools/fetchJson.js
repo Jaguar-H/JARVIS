@@ -1,5 +1,7 @@
-const TIMEOUT_MS = 8000;
-const HEADERS = { "User-Agent": "jarvis-chatbot/0.1 (local project)" };
+import { config } from "../config.js";
+
+const { timeoutMs, userAgent } = config.tools;
+const HEADERS = { "User-Agent": userAgent };
 
 // service: a readable name used in error messages, e.g. "The weather service".
 export async function fetchJson(service, url, params) {
@@ -7,7 +9,7 @@ export async function fetchJson(service, url, params) {
   try {
     response = await fetch(`${url}?${new URLSearchParams(params)}`, {
       headers: HEADERS,
-      signal: AbortSignal.timeout(TIMEOUT_MS),
+      signal: AbortSignal.timeout(timeoutMs),
     });
   } catch (error) {
     console.log(error);
