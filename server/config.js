@@ -28,6 +28,21 @@ export const config = {
     "Use a tool only when the user's request needs it, never just to be proactive. " +
     "If a tool fails, say so plainly and never guess or make up data.",
 
+  router: {
+    // Laya (systemOneModel/) decides which chat model answers when the dropdown says "auto".
+    // Set LAYA_URL when Laya is not on localhost, e.g. when the server runs in Docker.
+    url: env("LAYA_URL", "http://localhost:8100"),
+    timeoutMs: 2000, // slower than this and the medium model answers
+    // Laya scores each message from 0 (chit-chat) to 2 (code, math, technical). Cut-offs picked by
+    // probing 22 prompts: technical ones scored 1.48 and up, everything else 1.07 and below, and
+    // chit-chat versus general requests overlaps a little (0.17 to 0.95 against 0.52 to 1.07).
+    lowBelow: 0.8, // under this: lowModel
+    highFrom: 1.25, // from this: highModel; in between: mediumModel
+    lowModel: "bonsai-2:2b",
+    mediumModel: "qwen3:8b", // also the fallback when Laya is unavailable
+    highModel: "qwen3.6:35b",
+  },
+
   memory: {
     // The small model that extracts facts about the user after each reply.
     model: env("MEMORY_MODEL", "qwen3:8b"),

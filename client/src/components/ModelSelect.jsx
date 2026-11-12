@@ -1,4 +1,4 @@
-import { MODELS } from "../models.js";
+import { AUTO, MODELS } from "../models.js";
 
 export default function ModelSelect({ value, onChange, disabled }) {
   return (
@@ -9,6 +9,7 @@ export default function ModelSelect({ value, onChange, disabled }) {
       disabled={disabled}
       aria-label="Model"
     >
+      <option value={AUTO}>Auto</option>
       {MODELS.map((model) => (
         <option key={model} value={model}>{model}</option>
       ))}

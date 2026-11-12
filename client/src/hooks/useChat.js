@@ -1,12 +1,12 @@
 import { useRef, useState } from "react";
 import { streamChat } from "../api/chat.js";
 import { getChat } from "../api/chats.js";
-import { MODELS } from "../models.js";
+import { AUTO } from "../models.js";
 
 // The open conversation. onSent runs after every message so the chat list can refresh.
 export function useChat({ onSent }) {
   const [chatId, setChatId] = useState(null);
-  const [model, setModel] = useState(MODELS[0]);
+  const [model, setModel] = useState(AUTO);
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -49,6 +49,7 @@ export function useChat({ onSent }) {
 
   function handleEvent(event) {
     if (event.type === "chat") setChatId(event.chat.id);
+    else if (event.type === "route") updateReply((m) => ({ ...m, model: event.model }));
     else if (event.type === "tool") updateReply((m) => ({ ...m, tool: event.name }));
     // A token means the tool is done and the model is answering.
     else if (event.type === "token") {

@@ -3,6 +3,7 @@ import { stream } from "hono/streaming";
 import { streamReply } from "../agent.js";
 import { learnFromMessage } from "../memory.js";
 import { buildSystemPrompt } from "../prompt.js";
+import { AUTO, pickModel } from "../router.js";
 
 // Counting tokens must never break a reply.
 function countTokens(db, model, { prompt, completion }) {
@@ -48,14 +49,17 @@ export function chatRoutes(db) {
 
       let reply = "";
       try {
+        const model = body.model === AUTO ? await pickModel(body.content) : body.model;
+        await send({ type: "route", model });
+
         const history = db.getMessages(chat.id);
         const messages = [
           { role: "system", content: buildSystemPrompt(db.listMemories()) },
           ...history,
         ];
-        for await (const event of streamReply(body.model, messages, controller.signal)) {
+        for await (const event of streamReply(model, messages, controller.signal)) {
           if (event.type === "usage") {
-            countTokens(db, body.model, event);
+            countTokens(db, model, event);
             continue;
           }
           if (event.type === "token") reply += event.content;

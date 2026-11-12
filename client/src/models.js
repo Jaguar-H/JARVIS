@@ -1,3 +1,6 @@
+// Sent as the model when the server should choose one for each message.
+export const AUTO = "auto";
+
 export const MODELS = [
   "huihui_ai/Qwen3.8-abliterated:latest",
   "gemma4:31b",

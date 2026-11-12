@@ -23,7 +23,7 @@ function CodeBlock({ children }) {
 
 const markdownComponents = { pre: CodeBlock };
 
-export default function Message({ role, content, tool }) {
+export default function Message({ role, content, tool, model }) {
   return (
     <div className={`message message-${role}`}>
       {role === "assistant" ? (
@@ -41,6 +41,7 @@ export default function Message({ role, content, tool }) {
             )
           )}
           {tool && <em className="message-tool">Using {tool}…</em>}
+          {model && content && <span className="message-model">{model}</span>}
         </>
       ) : (
         content

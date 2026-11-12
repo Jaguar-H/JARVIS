@@ -29,7 +29,7 @@ export default function MessageList({ messages, onPrompt }) {
       {messages.length === 0 && <EmptyState onPrompt={onPrompt} />}
       {/* Append-only list, so the index is a stable key. */}
       {messages.map((message, index) => (
-        <Message key={index} role={message.role} content={message.content} tool={message.tool} />
+        <Message key={index} role={message.role} content={message.content} tool={message.tool} model={message.model} />
       ))}
     </div>
   );

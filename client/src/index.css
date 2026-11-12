@@ -292,6 +292,13 @@ body {
   opacity: 0.8;
 }
 
+.message-model {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
 .thinking {
   display: inline-flex;
   gap: 0.3rem;

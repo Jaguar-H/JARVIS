@@ -39,13 +39,14 @@ Chats are kept in the `jarvis-data` volume.
 
 ## Configuration
 
-Server settings (limits, timeouts, persona, tool URLs) are all in `server/config.js`. Three of them can also be set with env vars:
+Server settings (limits, timeouts, persona, tool URLs, router models) are all in `server/config.js`. Four of them can also be set with env vars:
 
 | Setting      | Where                  | Default                  |
 | ------------ | ---------------------- | ------------------------ |
 | Ollama URL   | `OLLAMA_URL` env var   | `http://localhost:11434` |
 | Memory model | `MEMORY_MODEL` env var | `qwen3:8b`               |
 | SearXNG URL  | `SEARXNG_URL` env var  | `http://localhost:8080`  |
+| Laya URL     | `LAYA_URL` env var     | `http://localhost:8100`  |
 | Model list   | `client/src/models.js` | five models, edit freely |
 | Database     | `server/main.js`       | `data/jarvis.db`         |
 
@@ -72,10 +73,23 @@ client/src/
 1. The client sends `{ chatId?, model, content }` to `POST /api/chat`. The server owns the history, so a missing `chatId` creates a new chat.
 2. The server loads the history from SQLite and asks Ollama for a reply, with the available tools attached.
 3. If the model asks for a tool, the server runs it, adds the result to the conversation and asks again (up to 5 steps).
-4. Events stream back as newline-delimited JSON: `chat`, `token`, `tool`, `error`. The client appends tokens as they arrive, and markdown is rendered in the reply.
+4. Events stream back as newline-delimited JSON: `chat`, `route`, `token`, `tool`, `error`. The client appends tokens as they arrive, and markdown is rendered in the reply.
 5. Once the reply finishes, it is saved. A failed or aborted reply is not saved.
 
 Only your messages and the final reply text are stored. Tool results are not, so the model calls a tool again if it needs the data in a later turn.
+
+## Auto model choice
+
+With **Auto** selected in the dropdown (the default), the server asks [Laya](https://huggingface.co/convaiinnovations/laya), a small decision model, how demanding the message is, on a 0 to 2 scale: chit-chat goes to `bonsai-2:2b` (low), general questions, writing and advice to `qwen3:8b` (medium), and code, debugging, math and technical analysis to `qwen3.6:35b` (high). Picking a model by hand skips Laya. The chosen model shows under each reply.
+
+Laya runs as its own service (`systemOneModel/`, port 8100):
+
+```sh
+docker-compose up -d laya   # the first start downloads the model
+curl localhost:8100/health
+```
+
+If Laya is down or slow (over 2s), the medium model answers. Only the latest message is classified, so a short follow-up such as "yes do it" counts as chit-chat. The models and the two cut-offs are in `server/config.js` (`router`).
 
 ## Tools
 
@@ -103,6 +117,7 @@ Not every Ollama model supports tool calling. If a model errors on every message
 | `GET /api/chats`      | List chats, most recently active first                     |
 | `GET /api/chats/:id`  | One chat with its messages                                 |
 | `DELETE /api/chats/:id` | Delete a chat and its messages                           |
+| `GET /api/usage`      | Lifetime token totals per model                            |
 | `GET /api/health`     | Health check                                               |
 
 ## Tests

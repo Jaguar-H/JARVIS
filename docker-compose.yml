@@ -10,6 +10,7 @@ services:
       # Ollama runs on the host, not in this container.
       OLLAMA_URL: http://host.docker.internal:11434
       SEARXNG_URL: http://searxng:8080
+      LAYA_URL: http://laya:8100
     extra_hosts:
       - "host.docker.internal:host-gateway" # needed on Linux; Docker Desktop has it already
     volumes:
@@ -26,5 +27,15 @@ services:
       - ./searxng:/etc/searxng
     restart: unless-stopped
 
+  # Picks the chat model for each message when the dropdown says Auto (see systemOneModel/).
+  laya:
+    build: ./systemOneModel
+    ports:
+      - "8100:8100"
+    volumes:
+      - laya-cache:/root/.cache/huggingface # the model downloads once, on first start
+    restart: unless-stopped
+
 volumes:
   jarvis-data:
+  laya-cache:

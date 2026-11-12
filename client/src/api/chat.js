@@ -1,6 +1,6 @@
 import { request } from "./http.js";
 
-// Sends a message and calls onEvent for each streamed event: chat, token, tool or error.
+// Sends a message and calls onEvent for each streamed event: chat, route, token, tool or error.
 // chatId is omitted for the first message of a new chat. Aborting signal stops the stream.
 export async function streamChat({ chatId, model, content }, onEvent, signal) {
   const response = await request("/api/chat", {
