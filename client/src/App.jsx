@@ -6,6 +6,7 @@ import MemoryPanel from "./components/MemoryPanel.jsx";
 import ModelSelect from "./components/ModelSelect.jsx";
 import MessageList from "./components/MessageList.jsx";
 import ChatInput from "./components/ChatInput.jsx";
+import ArcReactor from "./components/ArcReactor.jsx";
 
 const MEMORY_REFRESH_DELAY_MS = 3000;
 
@@ -13,7 +14,7 @@ export default function App() {
   const { chats, error: chatsError, refresh: refreshChats, remove } = useChats();
   const { memories, error: memoriesError, refresh: refreshMemories, remove: forget } =
     useMemories();
-  const { chatId, model, setModel, messages, isLoading, error, open, startNew, send } =
+  const { chatId, model, setModel, messages, isLoading, error, open, startNew, send, stop } =
     useChat({ onSent: handleSent });
 
   function handleSent() {
@@ -43,11 +44,16 @@ export default function App() {
       </ChatSidebar>
       <main className="chat">
         <header className="chat-header">
+          <div className="brand">
+            <ArcReactor />
+            <h1 className="wordmark">JARVIS</h1>
+          </div>
           <ModelSelect value={model} onChange={setModel} disabled={isLoading} />
         </header>
-        <MessageList messages={messages} />
+        {/* The key resets the scroll position when you switch chats. */}
+        <MessageList key={chatId ?? "new"} messages={messages} onPrompt={send} />
         {error && <p className="chat-error">{error}</p>}
-        <ChatInput onSend={send} disabled={isLoading} />
+        <ChatInput onSend={send} onStop={stop} isLoading={isLoading} />
       </main>
     </div>
   );

@@ -1,16 +1,21 @@
 :root {
-  --bg: #111;
-  --surface: #222;
-  --border: #333;
-  --accent: #2563eb;
+  --bg: #0a0603;
+  --panel: #120a05;
+  --surface: #1c1009;
+  --field: #170d06;
+  --border: #3a2410;
+  --accent: #ffb020;
+  --accent-soft: rgba(255, 176, 32, 0.35);
+  --glow: 0 0 12px rgba(255, 140, 0, 0.45);
   --error: #f87171;
-  --text: #eee;
+  --text: #fff1db;
+  --muted: #a88a6c;
 }
 
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
-  background: var(--bg);
+  background: radial-gradient(ellipse at top, #3a1f08, var(--bg) 60%);
   color: var(--text);
 }
 
@@ -26,7 +31,7 @@ body {
   width: 260px;
   padding: 1rem 0.75rem;
   border-right: 1px solid var(--border);
-  background: #151515;
+  background: var(--panel);
 }
 
 .sidebar-new {
@@ -37,6 +42,8 @@ body {
   color: inherit;
   cursor: pointer;
 }
+
+.sidebar-new:hover { border-color: var(--accent); }
 
 .sidebar-list {
   flex: 1;
@@ -52,7 +59,10 @@ body {
   border-radius: 8px;
 }
 
-.sidebar-item.active { background: var(--surface); }
+.sidebar-item.active {
+  background: var(--surface);
+  box-shadow: inset 2px 0 var(--accent);
+}
 
 .sidebar-title {
   flex: 1;
@@ -113,7 +123,7 @@ body {
 .memory-empty {
   margin: 0;
   padding: 0.3rem 0.6rem;
-  color: #888;
+  color: var(--muted);
   font-size: 0.85rem;
 }
 
@@ -127,6 +137,90 @@ body {
   margin: 0 auto;
 }
 
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1rem 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* The arc reactor: rings and a dashed ring that turns slowly, with a glowing core. */
+.arc-reactor {
+  width: 1.8rem;
+  height: 1.8rem;
+  overflow: visible;
+  filter: drop-shadow(var(--glow));
+}
+
+.arc-reactor.large {
+  display: block;
+  width: 9rem;
+  height: 9rem;
+  margin: 0 auto 1rem;
+}
+
+.arc-ring {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  opacity: 0.7;
+}
+
+.arc-dashes {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 6;
+  stroke-dasharray: 10 6;
+  opacity: 0.6;
+}
+
+.arc-spin {
+  transform-origin: 50px 50px;
+  animation: arc-spin 12s linear infinite;
+}
+
+.arc-core {
+  fill: #fff6d6;
+  animation: arc-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes arc-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes arc-pulse {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arc-spin,
+  .arc-core { animation: none; }
+}
+
+.wordmark {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.4em;
+  color: var(--accent);
+  text-shadow: var(--glow);
+}
+
+.model-select {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--field);
+  color: inherit;
+}
+
 .message-list {
   flex: 1;
   overflow-y: auto;
@@ -134,6 +228,39 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.empty {
+  margin: auto;
+  text-align: center;
+}
+
+.empty h2 {
+  font-size: 1.4rem;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+}
+
+.starters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.2rem;
+}
+
+.starter {
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.starter:hover {
+  border-color: var(--accent);
+  box-shadow: var(--glow);
 }
 
 .message {
@@ -145,19 +272,51 @@ body {
 
 .message-user {
   align-self: flex-end;
-  background: var(--accent);
+  background: rgba(255, 176, 32, 0.12);
+  border: 1px solid var(--accent-soft);
   white-space: pre-wrap;
 }
 
+/* Replies have no bubble: a thin glowing line marks them instead. */
 .message-assistant {
   align-self: flex-start;
-  background: var(--surface);
+  max-width: 100%;
+  padding: 0.2rem 0 0.2rem 1rem;
+  border-left: 2px solid var(--accent-soft);
 }
 
 .message-tool {
   display: block;
   font-size: 0.85rem;
-  opacity: 0.7;
+  color: var(--accent);
+  opacity: 0.8;
+}
+
+.thinking {
+  display: inline-flex;
+  gap: 0.3rem;
+  padding: 0.4rem 0;
+}
+
+.thinking i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: var(--glow);
+  animation: think 1.2s ease-in-out infinite;
+}
+
+.thinking i:nth-child(2) { animation-delay: 0.2s; }
+.thinking i:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes think {
+  0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thinking i { animation: none; opacity: 0.6; }
 }
 
 .message-assistant > :first-child { margin-top: 0; }
@@ -207,6 +366,32 @@ body {
 
 .message-assistant pre code { padding: 0; }
 
+/* The wrapper holds the Copy button, so the <pre> loses its own margin. */
+.message-assistant .code-block {
+  position: relative;
+  margin: 0.6rem 0;
+}
+
+.message-assistant .code-block pre { margin: 0; }
+
+.code-copy {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.code-copy:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 .message-assistant table {
   display: block;
   margin: 0.6rem 0;
@@ -226,43 +411,55 @@ body {
   color: var(--error);
 }
 
+/* The composer is one rounded box: a text area and a button. */
 .chat-input {
   display: flex;
-  gap: 0.5rem;
-  padding: 1rem;
+  align-items: flex-end;
+  gap: 0.4rem;
+  margin: 0 1rem 1rem;
+  padding: 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
 }
 
-.chat-input input {
+.chat-input:focus-within {
+  border-color: var(--accent-soft);
+  box-shadow: var(--glow);
+}
+
+.chat-input textarea {
   flex: 1;
-  padding: 0.6rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: #1a1a1a;
+  max-height: 200px;
+  padding: 0.5rem 0.6rem;
+  border: 0;
+  background: transparent;
   color: inherit;
+  font: inherit;
+  resize: none;
+  outline: none;
 }
 
 .chat-input button {
-  padding: 0.6rem 1rem;
-  border: 0;
-  border-radius: 8px;
-  background: var(--accent);
-  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  font: inherit;
   cursor: pointer;
+}
+
+.chat-input .send {
+  border: 0;
+  background: var(--accent);
+  color: #1a0e00;
+}
+
+.chat-input .stop {
+  border: 1px solid var(--error);
+  background: transparent;
+  color: var(--error);
 }
 
 .chat-input button:disabled {
   opacity: 0.5;
   cursor: default;
-}
-
-.chat-header {
-  padding: 1rem 1rem 0;
-}
-
-.model-select {
-  padding: 0.4rem 0.6rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: #1a1a1a;
-  color: inherit;
 }

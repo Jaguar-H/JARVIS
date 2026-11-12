@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { streamChat } from "../api/chat.js";
 import { getChat } from "../api/chats.js";
 import { MODELS } from "../models.js";
@@ -10,6 +10,7 @@ export function useChat({ onSent }) {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const abortRef = useRef(null);
 
   async function open(id) {
     setError(null);
@@ -36,10 +37,14 @@ export function useChat({ onSent }) {
     );
   }
 
+  // Drop the reply bubble if nothing arrived to fill it.
+  function dropEmptyReply() {
+    setMessages((prev) => (prev.at(-1)?.content === "" ? prev.slice(0, -1) : prev));
+  }
+
   function fail(message) {
     setError(message);
-    // Drop the reply bubble if nothing arrived to fill it.
-    setMessages((prev) => (prev.at(-1)?.content === "" ? prev.slice(0, -1) : prev));
+    dropEmptyReply();
   }
 
   function handleEvent(event) {
@@ -60,16 +65,27 @@ export function useChat({ onSent }) {
     setError(null);
     setIsLoading(true);
 
+    const controller = new AbortController();
+    abortRef.current = controller;
     try {
-      await streamChat({ chatId, model, content }, handleEvent);
+      await streamChat({ chatId, model, content }, handleEvent, controller.signal);
     } catch (err) {
-      fail(err.message);
+      // Stopping on purpose is not an error. The part already shown stays on screen.
+      if (err.name === "AbortError") dropEmptyReply();
+      else fail(err.message);
     } finally {
+      abortRef.current = null;
       updateReply((m) => ({ ...m, tool: null }));
       setIsLoading(false);
       onSent();
     }
   }
 
-  return { chatId, model, setModel, messages, isLoading, error, open, startNew, send };
+  function stop() {
+    abortRef.current?.abort();
+  }
+
+  return {
+    chatId, model, setModel, messages, isLoading, error, open, startNew, send, stop,
+  };
 }
