@@ -1,5 +1,8 @@
 {
-  "imports": { "hono": "jsr:@hono/hono@^4" },
+  "imports": {
+    "@anthropic-ai/sdk": "npm:@anthropic-ai/sdk@^1.8.0",
+    "hono": "jsr:@hono/hono@^4"
+  },
   "nodeModulesDir": "auto",
   "tasks": {
     "server": "deno run --watch --env-file=.env -A server/main.js",

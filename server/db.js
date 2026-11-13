@@ -36,9 +36,14 @@ export function openDb(path) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       text TEXT NOT NULL,
       due_at INTEGER NOT NULL,
-      sent_at INTEGER
+      sent_at INTEGER,
+      kind TEXT NOT NULL DEFAULT 'message'
     );
   `);
+  // The table was first created without `kind`; add it to databases made before that.
+  if (!db.prepare("PRAGMA table_info(reminders)").all().some((column) => column.name === "kind")) {
+    db.exec("ALTER TABLE reminders ADD COLUMN kind TEXT NOT NULL DEFAULT 'message'");
+  }
 
   const insertChat = db.prepare("INSERT INTO chats (title, model) VALUES (?, ?)");
 
@@ -72,9 +77,9 @@ export function openDb(path) {
     ON CONFLICT(key) DO UPDATE SET value = excluded.value
   `);
   const removeSetting = db.prepare("DELETE FROM settings WHERE key = ?");
-  const insertReminder = db.prepare("INSERT INTO reminders (text, due_at) VALUES (?, ?)");
+  const insertReminder = db.prepare("INSERT INTO reminders (text, due_at, kind) VALUES (?, ?, ?)");
   const selectDueReminders = db.prepare(
-    "SELECT id, text, due_at FROM reminders WHERE sent_at IS NULL AND due_at <= ? ORDER BY due_at",
+    "SELECT id, text, due_at, kind FROM reminders WHERE sent_at IS NULL AND due_at <= ? ORDER BY due_at",
   );
   const updateReminderSent = db.prepare("UPDATE reminders SET sent_at = ? WHERE id = ?");
   const selectUsage = db.prepare(
@@ -121,8 +126,10 @@ export function openDb(path) {
 
     deleteSetting: (key) => removeSetting.run(key),
 
-    // dueAt and now are epoch milliseconds.
-    addReminder: (text, dueAt) => Number(insertReminder.run(text, dueAt).lastInsertRowid),
+    // dueAt and now are epoch milliseconds. kind is "message" (send text as is) or "task"
+    // (text is an instruction for Jarvis to carry out, then send the result).
+    addReminder: (text, dueAt, kind = "message") =>
+      Number(insertReminder.run(text, dueAt, kind).lastInsertRowid),
 
     listDueReminders: (now) => selectDueReminders.all(now).map(plain),
 

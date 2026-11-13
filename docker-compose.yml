@@ -11,6 +11,8 @@ services:
       OLLAMA_URL: http://host.docker.internal:11434
       SEARXNG_URL: http://searxng:8080
       LAYA_URL: http://laya:8100
+      # Optional: Auto's high tier is a Claude model; without a key Auto uses the medium local model.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       # Optional: set both (e.g. in .env next to this file) to turn the Telegram bot on.
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}

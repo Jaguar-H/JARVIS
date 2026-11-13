@@ -1,14 +1,17 @@
 import { config } from "./config.js";
 
-function today() {
-  return new Date().toLocaleDateString("en-GB", {
-    dateStyle: "full",
-    timeZone: config.timezone,
-  });
+// e.g. "Thursday 12 November 2026, 14:03 (Asia/Kolkata, UTC+5:30)"
+function now() {
+  const date = new Date();
+  const options = { timeZone: config.timezone };
+  const day = date.toLocaleDateString("en-GB", { ...options, dateStyle: "full" });
+  const time = date.toLocaleTimeString("en-GB", { ...options, timeStyle: "short" });
+  const offset = date.toLocaleTimeString("en-GB", { ...options, timeZoneName: "shortOffset" }).split(" ")[1];
+  return `${day}, ${time} (${config.timezone}, ${offset})`;
 }
 
 // Worked out per request so a long-running server never has a stale date.
-const persona = () => `${config.persona} Today is ${today()}.`;
+const persona = () => `${config.persona} Now it is ${now()}.`;
 
 // memories: [{ id, fact }], oldest first. Only the newest ones are used.
 export function buildSystemPrompt(memories) {

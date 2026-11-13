@@ -7,10 +7,12 @@ Deno.test("without memories, the prompt has no memory section", () => {
   assertEquals(prompt.includes("What you know about the user"), false);
 });
 
-Deno.test("tells the model today's date in the configured timezone", () => {
+Deno.test("tells the model the date, time and offset in the configured timezone", () => {
   const year = new Date().toLocaleDateString("en-GB", { year: "numeric", timeZone: "Asia/Kolkata" });
-  assertEquals(buildSystemPrompt([]).includes(`Today is`), true);
-  assertEquals(buildSystemPrompt([]).includes(year), true);
+  const prompt = buildSystemPrompt([]);
+  assertEquals(prompt.includes("Now it is"), true);
+  assertEquals(prompt.includes(year), true);
+  assertEquals(prompt.includes("(Asia/Kolkata, GMT+5:30)"), true);
 });
 
 Deno.test("lists the facts it knows about the user", () => {

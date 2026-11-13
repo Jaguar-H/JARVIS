@@ -47,6 +47,7 @@ Server settings (limits, timeouts, persona, tool URLs, router models) are all in
 | Memory model | `MEMORY_MODEL` env var | `qwen3:8b`               |
 | SearXNG URL  | `SEARXNG_URL` env var  | `http://localhost:8080`  |
 | Laya URL     | `LAYA_URL` env var     | `http://localhost:8100`  |
+| Claude for hard requests in Auto | `ANTHROPIC_API_KEY` env var | off (Auto uses `qwen3:8b` instead) |
 | Telegram bot | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` env vars | off |
 | Model list   | `client/src/models.js` | five models, edit freely |
 | Database     | `server/main.js`       | `data/jarvis.db`         |
@@ -96,7 +97,7 @@ Only your messages and the final reply text are stored. Tool results are not, so
 
 ## Auto model choice
 
-With **Auto** selected in the dropdown (the default), the server asks [Laya](https://huggingface.co/convaiinnovations/laya), a small decision model, how demanding the message is, on a 0 to 2 scale: chit-chat goes to `bonsai-2:2b` (low), general questions, writing and advice to `qwen3:8b` (medium), and code, debugging, math and technical analysis to `qwen3.6:35b` (high). Picking a model by hand skips Laya. The chosen model shows under each reply.
+With **Auto** selected in the dropdown (the default), the server asks [Laya](https://huggingface.co/convaiinnovations/laya), a small decision model, how demanding the message is, on a 0 to 2 scale: chit-chat goes to `bonsai-2:2b` (low), general questions, writing and advice to `qwen3:8b` (medium), and code, debugging, math and technical analysis to Claude Haiku 5.5 (high; needs `ANTHROPIC_API_KEY`, otherwise `qwen3:8b` answers, and the same happens if the Claude call fails before any text arrives). Picking a model by hand skips Laya. The chosen model shows under each reply.
 
 Laya runs as its own service (`systemOneModel/`, port 8100):
 

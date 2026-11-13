@@ -31,7 +31,28 @@ Deno.test("sends the message to Laya as a three-way score question", () =>
     assertEquals(requests[0].body.questions.kind.criteria.length, 3);
   }));
 
-Deno.test("maps the score to the low, medium or high model, cut-offs included", async () => {
+Deno.test("sends the previous messages too, each cut short", () =>
+  withLaya(score(1), async (requests) => {
+    const long = "x".repeat(config.router.contextChars + 50);
+    await pickModel("yes do it", [{ role: "user", content: "fix my bug" }, { role: "assistant", content: long }]);
+    assertEquals(requests[0].body.state, {
+      previous: ["user: fix my bug", `assistant: ${"x".repeat(config.router.contextChars)}`],
+      message: "yes do it",
+    });
+  }));
+
+// Runs fn with config.anthropic.apiKey set to the given value, then puts the real one back.
+async function withKey(apiKey, fn) {
+  const original = config.anthropic.apiKey;
+  config.anthropic.apiKey = apiKey;
+  try {
+    return await fn();
+  } finally {
+    config.anthropic.apiKey = original;
+  }
+}
+
+Deno.test("maps the score to the low, medium or high model, cut-offs included", () => withKey("test-key", async () => {
   const cases = [
     [0, lowModel],
     [lowBelow - 0.01, lowModel],
@@ -45,7 +66,13 @@ Deno.test("maps the score to the low, medium or high model, cut-offs included", 
       assertEquals(await pickModel("x"), expected, `score ${value}`);
     });
   }
-});
+}));
+
+Deno.test("without an Anthropic key, a high score uses the medium model", () =>
+  withKey("", () =>
+    withLaya(score(2), async () => {
+      assertEquals(await pickModel("write a parser"), mediumModel);
+    })));
 
 Deno.test("falls back to the medium model, without throwing, when Laya fails", async () => {
   const failures = [

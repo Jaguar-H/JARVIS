@@ -1,5 +1,5 @@
 // Every server setting in one place. Edit a value here and restart.
-// Only OLLAMA_URL, MEMORY_MODEL, SEARXNG_URL, LAYA_URL, TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID can also be set with environment variables.
+// Only OLLAMA_URL, MEMORY_MODEL, SEARXNG_URL, LAYA_URL, ANTHROPIC_API_KEY, TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID can also be set with environment variables.
 const env = (name, fallback) => Deno.env.get(name) ?? fallback;
 
 export const config = {
@@ -49,6 +49,8 @@ export const config = {
     // Set LAYA_URL when Laya is not on localhost, e.g. when the server runs in Docker.
     url: env("LAYA_URL", "http://localhost:8100"),
     timeoutMs: 2000, // slower than this and the medium model answers
+    contextMessages: 4, // messages before the newest one that Laya also sees
+    contextChars: 200, // each of them is cut to this many characters
     // Laya scores each message from 0 (chit-chat) to 2 (code, math, technical). Cut-offs picked by
     // probing 22 prompts: technical ones scored 1.48 and up, everything else 1.07 and below, and
     // chit-chat versus general requests overlaps a little (0.17 to 0.95 against 0.52 to 1.07).
@@ -56,7 +58,14 @@ export const config = {
     highFrom: 1.25, // from this: highModel; in between: mediumModel
     lowModel: "bonsai-2:2b",
     mediumModel: "qwen3:8b", // also the fallback when Laya is unavailable
-    highModel: "qwen3.6:35b",
+    highModel: "claude-haiku-5-5", // a Claude model, needs ANTHROPIC_API_KEY (the old local pick was qwen3.6:35b)
+  },
+
+  anthropic: {
+    // Needed for the Claude model Auto uses as its high tier. Without a key, Auto uses mediumModel.
+    apiKey: env("ANTHROPIC_API_KEY", ""),
+    maxTokens: 32000, // upper limit for one reply
+    effort: "high", // thinking depth; Haiku 5.5 defaults to "medium"
   },
 
   memory: {

@@ -1,4 +1,5 @@
 import { config } from "./config.js";
+import { isClaude, streamClaude } from "./anthropic.js";
 import { streamChat } from "./ollama.js";
 import { definitions, runTool } from "./tools/index.js";
 
@@ -9,12 +10,13 @@ const MAX_STEPS = config.agent.maxSteps;
 // When the model asks for tools, runs them and asks again, until it answers in text.
 export async function* streamReply(model, history, signal) {
   const messages = [...history];
+  const chat = isClaude(model) ? streamClaude : streamChat; // both yield Ollama-shaped chunks
 
   for (let step = 0; step < MAX_STEPS; step++) {
     let content = "";
     const toolCalls = [];
 
-    for await (const { message, done, prompt_eval_count, eval_count } of streamChat(model, messages, definitions, signal)) {
+    for await (const { message, done, prompt_eval_count, eval_count } of chat(model, messages, definitions, signal)) {
       if (message.content) {
         content += message.content;
         yield { type: "token", content: message.content };

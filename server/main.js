@@ -6,7 +6,9 @@ import { chatRoutes } from "./routes/chat.js";
 import { chatsRoutes } from "./routes/chats.js";
 import { memoriesRoutes } from "./routes/memories.js";
 import { usageRoutes } from "./routes/usage.js";
-import { startTelegram } from "./telegram.js";
+import { startScheduler } from "./scheduler.js";
+import { handleUpdate, startTelegram } from "./telegram.js";
+import { run as sendTelegram } from "./tools/telegram/sendTelegram.js";
 
 const DB_DIR = "data";
 
@@ -27,3 +29,5 @@ app.use("/*", serveStatic({ root: "./client/dist" }));
 
 Deno.serve(app.fetch);
 startTelegram(db);
+// A due task is handled like a message the user typed in the shared Telegram chat.
+startScheduler(db, (text) => handleUpdate(db, { message: { text } }, (reply) => sendTelegram({ text: reply })));
